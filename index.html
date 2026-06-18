@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AetherAI - OpenRouter Chatbot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+
+  <!-- Sidebar Backdrop (for Mobile overlay) -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <!-- Outer Dashboard App Wrapper -->
+  <div class="app-wrapper">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="app-sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <i data-feather="cpu"></i>
+          <span>AetherAI</span>
+        </div>
+        <button class="menu-toggle" id="menu-close-btn">
+          <i data-feather="x"></i>
+        </button>
+      </div>
+
+      <div class="sidebar-controls">
+        <button class="btn-new-chat" id="new-chat-btn">
+          <i data-feather="plus"></i>
+          <span>New Chat</span>
+        </button>
+        <div class="search-box">
+          <i data-feather="search"></i>
+          <input type="text" id="chat-search" placeholder="Search chats...">
+        </div>
+      </div>
+
+      <!-- Chats history lists -->
+      <div class="chat-history" id="chat-list">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar" id="user-initials">U</div>
+          <div class="persona-meta">
+            <span style="font-size: 0.85rem; font-weight: 600;">Personal Assistant</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">Settings Configured</span>
+          </div>
+        </div>
+        <button class="btn-settings" id="open-settings-btn" title="Settings">
+          <i data-feather="settings"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CHAT INTERFACE -->
+    <main class="chat-panel">
+      <!-- Header -->
+      <header class="chat-header">
+        <div class="active-persona-info">
+          <button class="menu-toggle" id="menu-open-btn">
+            <i data-feather="menu"></i>
+          </button>
+          <div class="persona-avatar" id="active-avatar">ðŸ¤–</div>
+          <div class="persona-meta">
+            <span class="persona-name" id="active-name">AI Assistant</span>
+            <span class="persona-status" id="active-tagline">Standard Helper</span>
+          </div>
+        </div>
+        
+        <div class="chat-actions">
+          <button class="btn-action" id="btn-export-chat" title="Export Chat History">
+            <i data-feather="download" style="width:16px;"></i>
+            <span class="desktop-only">Export</span>
+          </button>
+          <button class="btn-action" id="btn-clear-chat" title="Clear Conversational Threads">
+            <i data-feather="trash-2" style="width:16px;"></i>
+            <span class="desktop-only">Clear</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Scrollable Message Area -->
+      <div class="chat-messages-container" id="chat-messages">
+        <!-- Welcomes or Chats load here -->
+      </div>
+
+      <!-- Footer Control Panel -->
+      <div class="input-dock">
+        
+        <!-- Persona Quick Switcher Ribbon -->
+        <div class="persona-ribbon-container" id="persona-ribbon">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Chat Input Form -->
+        <div class="chat-input-wrapper">
+          <textarea id="chat-input" placeholder="Type a message or click microphone..." rows="1"></textarea>
+          
+          <div class="input-actions">
+            <!-- Speak bot responses out loud -->
+            <button class="btn-input-utility" id="btn-tts-toggle" title="Toggle Text-To-Speech (Auto Read Out Loud)">
+              <i data-feather="volume-2"></i>
+            </button>
+            
+            <!-- Voice Input microphone -->
+            <button class="btn-input-utility" id="btn-speech-recognition" title="Voice Typing (Speech-to-Text)">
+              <i data-feather="mic"></i>
+            </button>
+            
+            <!-- Send Button -->
+            <button class="btn-send" id="btn-send-message">
+              <i data-feather="send"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Dashboard Configuration</h3>
+        <button class="btn-close-modal" id="close-settings-btn">
+          <i data-feather="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Provider -->
+        <div class="settings-section">
+          <label class="settings-label">API Provider</label>
+          <select class="settings-input settings-select" id="settings-provider">
+            <option value="local">Local Simulated AI (No Key Required)</option>
+            <option value="openrouter">OpenRouter API (Free models available)</option>
+          </select>
+        </div>
+
+        <!-- API key is configured securely on Vercel, never in browser storage. -->
+        <div class="settings-section" id="apikey-section" style="display: none;">
+          <label class="settings-label" id="apikey-label">OpenRouter Key</label>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Configured securely as OPENROUTER_API_KEY in Vercel Environment Variables.</span>
+        </div>
+
+        <!-- Model dropdown selector -->
+        <div class="settings-section" id="model-section" style="display: none;">
+          <label class="settings-label">AI Model</label>
+          <select class="settings-input settings-select" id="settings-model">
+            <!-- Populated via JS depending on provider -->
+          </select>
+        </div>
+
+        <!-- Temperature Slider -->
+        <div class="settings-section">
+          <div class="slider-row">
+            <label class="settings-label">Temperature (Creativity)</label>
+            <span class="temperature-display" id="temp-display">0.7</span>
+          </div>
+          <input type="range" min="0" max="1" step="0.1" value="0.7" class="settings-input" style="padding:0;" id="settings-temp">
+        </div>
+
+        <!-- Custom Prompt Instructions -->
+        <div class="settings-section">
+          <label class="settings-label">Base System Instruction Override</label>
+          <textarea class="settings-input" id="settings-system-prompt" rows="3" placeholder="You are a helpful, premium AI chatbot..."></textarea>
+        </div>
+
+        <!-- Themes Selector -->
+        <div class="settings-section">
+          <label class="settings-label">Interface Aesthetics</label>
+          <div class="theme-grid">
+            <div class="theme-card active" data-theme-id="glass">
+              <div class="theme-dot" style="background: linear-gradient(135deg, #a855f7 0%, #06b6d4 100%);"></div>
+              <span>Glassmorphic Dark</span>
+            </div>
+            <div class="theme-card" data-theme-id="obsidian">
+              <div class="theme-dot" style="background: #22222f; border: 1px solid #444;"></div>
+              <span>Obsidian Night</span>
+            </div>
+            <div class="theme-card" data-theme-id="cyberpunk">
+              <div class="theme-dot" style="background: #ff007f; box-shadow: 0 0 5px #00ffff;"></div>
+              <span>Cyberpunk Neon</span>
+            </div>
+            <div class="theme-card" data-theme-id="light">
+              <div class="theme-dot" style="background: #ffffff; border: 1px solid #ccc;"></div>
+              <span>Minimalist Light</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="settings-section" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+          <button class="btn-new-chat" id="btn-save-settings" style="width: 100%; font-size: 0.95rem; padding: 12px 14px;">Save & Apply Settings</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  
+  <script src="app.js"></script>
+</body>
+</html>
